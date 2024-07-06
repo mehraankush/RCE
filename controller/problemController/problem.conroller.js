@@ -112,7 +112,10 @@ export const getProblemBySlug = async (req, res) => {
 	try {
 		const { slug } = req.params;
 
-		const findProblem = await ProblemModel.findOne({ slug: slug });
+		const findProblem = await ProblemModel.findOne({ slug: slug })
+			.populate('testCase')
+			.populate('problem.ProgrammingLanguage')
+			.lean();
 
 		if (!findProblem) {
 			return res.status(404).json({
