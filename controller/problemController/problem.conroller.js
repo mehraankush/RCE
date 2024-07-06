@@ -37,6 +37,7 @@ export const createProblem = async (req, res) => {
 			description,
 			difficulty,
 			tags: tags.split(",").map((tag) => tag.trim()),
+			slug: title.replaceAll(" ", "-").toLowerCase(),
 			companies: companies.split(",").map((company) => company.trim()),
 			problem: {
 				ProgrammingLanguage: new mongoose.Types.ObjectId(language),
@@ -95,6 +96,36 @@ export const getAllProblems = async (req, res) => {
 			currentPage: page,
 			totalPages: Math.ceil(totalProblems / limit),
 			data: allProblems,
+		});
+
+	} catch (error) {
+		console.log(error.message);
+		return res.status(500).json({
+			success: false,
+			message: error.message,
+			data: null,
+		});
+	}
+}
+
+export const getProblemBySlug = async (req, res) => {
+	try {
+		const { slug } = req.params;
+
+		const findProblem = await ProblemModel.findOne({ slug: slug });
+
+		if (!findProblem) {
+			return res.status(404).json({
+				success: false,
+				message: `Problem not found, try a different slug`,
+				slug: slug
+			});
+		}
+
+		return res.status(200).json({
+			success: true,
+			message: `Problem found`,
+			problem: findProblem
 		});
 
 	} catch (error) {
