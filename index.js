@@ -10,6 +10,7 @@ const port = process.env.PORT || 4000
 const app = express()
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use("/api/v1", allRoutes);
 
 const allowedOrigins = [
@@ -26,8 +27,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-
 
 app.listen(port, () => {
     console.log("Server is up and running at ", port)

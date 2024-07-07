@@ -12,4 +12,11 @@ router.use('/code', codeExecutionROute);
 router.use('/test', testCAsesRote);
 router.use('/submission', submissionROute);
 
+router.get('/helloWorld', (req, res) => {
+    return res.status(200).json({
+        success: true,
+        message: "Test route"
+    })
+})
+
 export default router;
