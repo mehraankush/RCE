@@ -64,6 +64,12 @@ const problemSchema = new mongoose.Schema(
 			type: mongoose.Types.ObjectId,
 			ref: "TestCase",
 		},
+		acceptance: {
+			type: String,
+		},
+		submissions: {
+			type: String,
+		},
 	},
 	{
 		timestamps: true,

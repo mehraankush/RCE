@@ -2,12 +2,14 @@
 import ProgrammingLanguage from "../../models/Language.model.js";
 
 // Request body validation function
-const validateRequestBody = (body) => {
-	if (!body.programmingLanguage || body.programmingLanguage.trim() === "") {
-		throw new Error("programmingLanguage is required");
-	}
-	// Add more validation logic as needed for other fields
-};
+function validateRequestBody(updates) {
+    const allowedFields = ['programmingLanguage', 'languageId', 'language'];
+    const providedFields = Object.keys(updates).filter(field => allowedFields.includes(field));
+
+    if (providedFields.length === 0) {
+        throw new Error('At least one field (programmingLanguage, languageId, language) must be provided.');
+    }
+}
 
 // Create a new programming language
 export async function createProgrammingLanguage(req, res) {
@@ -112,22 +114,22 @@ export async function updateProgrammingLanguage(req, res) {
 		if (!updatedLanguage) {
 			return res.status(404).json({
 				success: false,
-				message: "Programming language not found",
+				message: 'Programming language not found',
 				data: null,
 			});
 		}
 
 		res.json({
 			success: true,
-			message: "Programming language updated successfully",
+			message: 'Programming language updated successfully',
 			data: updatedLanguage,
 		});
 	} catch (error) {
 		console.error(error);
-		if (error.name === "CastError") {
+		if (error.name === 'CastError') {
 			return res.status(400).json({
 				success: false,
-				message: "Invalid programming language ID",
+				message: 'Invalid programming language ID',
 				data: null,
 			});
 		}
@@ -138,7 +140,6 @@ export async function updateProgrammingLanguage(req, res) {
 		});
 	}
 }
-
 // Delete a programming language by ID
 export async function deleteProgrammingLanguage(req, res) {
 	const { id } = req.params;

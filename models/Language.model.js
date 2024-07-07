@@ -11,6 +11,10 @@ const programmingLanguageSchema = new mongoose.Schema(
 			type: Number,
 			required: true,
 		},
+		language: {
+			type: String,
+			required: true,
+		},
 	},
 	{
 		timestamps: true,

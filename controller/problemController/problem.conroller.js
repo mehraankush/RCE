@@ -18,6 +18,7 @@ export const createProblem = async (req, res) => {
 			solutionCode,
 			hints,
 			language,
+			constraints
 		} = req.body;
 
 		// Input validation
@@ -48,6 +49,7 @@ export const createProblem = async (req, res) => {
 			},
 			hints: hints ? hints.trim() : null,
 			testCase: testCase ? new mongoose.Types.ObjectId(testCase) : null,
+			constraints: constraints
 		});
 
 		return res.status(200).json({
