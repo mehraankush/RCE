@@ -34,7 +34,7 @@ export const runCode = async (req, res) => {
                 success: false,
                 message: "We are currently unable to process requests in this language"
             });
-        }   
+        }
         console.log("findSolutionDrivers", findSolutionDrivers)
 
         const { topDriver, bottomDriver, solutionCode } = findSolutionDrivers[0];
@@ -76,7 +76,7 @@ export const runCode = async (req, res) => {
             });
         }
 
-        console.log("allTestCasesWithUserCode", allTestCasesWithUserCode)
+        // console.log("allTestCasesWithUserCode", allTestCasesWithUserCode)
 
         if (filterCustomInputs2.length > 0) {
             for (let i = 0; i < filterCustomInputs2.length; i++) {
@@ -89,11 +89,18 @@ export const runCode = async (req, res) => {
                     allTestCasesWithUserCode.data[i + filterCustomInputs2.length].status.description = "Accepted";
                     allTestCasesWithUserCode.data[i + filterCustomInputs2.length].status.id = 3;
                 }
+                allTestCasesWithUserCode.data[i + filterCustomInputs2.length].Expected_Output = allTestCasesWithUserCode.data[i].stdout
             }
 
             allTestCasesWithUserCode.data = allTestCasesWithUserCode.data.slice(3);
             allTestCasesWithUserCode.success = true;
         }
+
+        // console.log("combinedTC", combinedTC)
+        allTestCasesWithUserCode.data.forEach((item, index) => {
+            item.input = combinedTC[index].input;
+            item.Expected_Output = item.Expected_Output ? item.Expected_Output : combinedTC[index].output || item.Expected_Output;
+        });
 
         if (!allTestCasesWithUserCode.success && filterCustomInputs2.length > 0) {
             return res.status(404).json({
