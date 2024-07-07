@@ -58,7 +58,7 @@ const problemSchema = new mongoose.Schema(
 			},
 		],
 		hints: {
-			type: String,
+			type: String, // make it array 
 		},
 		testCase: {
 			type: mongoose.Types.ObjectId,

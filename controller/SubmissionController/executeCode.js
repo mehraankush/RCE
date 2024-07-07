@@ -27,14 +27,15 @@ export const runCode = async (req, res) => {
                 message: "Problem/TestCases does not exist"
             });
         }
-
+        console.log("PROBLEM", prob)
         const findSolutionDrivers = prob.problem.filter((prob) => prob.ProgrammingLanguage.languageId === languageId);
         if (!findSolutionDrivers.length) {
             return res.status(404).json({
                 success: false,
                 message: "We are currently unable to process requests in this language"
             });
-        }
+        }   
+        console.log("findSolutionDrivers", findSolutionDrivers)
 
         const { topDriver, bottomDriver, solutionCode } = findSolutionDrivers[0];
         const userCodeConcatenated = topDriver + userCode + bottomDriver;
@@ -274,7 +275,7 @@ const processTestCase = async (
 
             const allAccepted = userSubmissionsStatus.every(submission => submission.status.id === 3 || submission.status.id === 4);
             const wrongAnswer = userSubmissionsStatus.every(submission => submission.status.id === 4);
-            
+
             if (allAccepted) {
                 return {
                     success: false,

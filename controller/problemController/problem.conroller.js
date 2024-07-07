@@ -146,7 +146,6 @@ export const getProblemBySlug = async (req, res) => {
 export const updateProblem = async (req, res) => {
 	try {
 		const {
-			problemId,
 			title,
 			description,
 			difficulty,
@@ -157,9 +156,11 @@ export const updateProblem = async (req, res) => {
 			bottomDriver,
 			solutionCode,
 			hints,
-			language,
+			ProgrammingLanguage,
 			testCase
 		} = req.body;
+
+		const { id: problemId } = req.params
 
 		if (!mongoose.Types.ObjectId.isValid(problemId)) {
 			return res.status(400).json({
@@ -186,8 +187,8 @@ export const updateProblem = async (req, res) => {
 		existingProblem.tags = tags ? tags.split(",").map((tag) => tag.trim()) : existingProblem.tags;
 		existingProblem.companies = companies ? companies.split(",").map((company) => company.trim()) : existingProblem.companies;
 
-		if (language || topDriver || boilerplate || bottomDriver || solutionCode) {
-			existingProblem.problem[0].ProgrammingLanguage = language ? new mongoose.Types.ObjectId(language) : existingProblem.problem[0].ProgrammingLanguage;
+		if (ProgrammingLanguage || topDriver || boilerplate || bottomDriver || solutionCode) {
+			existingProblem.problem[0].ProgrammingLanguage = ProgrammingLanguage ? new mongoose.Types.ObjectId(ProgrammingLanguage) : existingProblem.problem[0].ProgrammingLanguage;
 			existingProblem.problem[0].topDriver = topDriver || existingProblem.problem[0].topDriver;
 			existingProblem.problem[0].boilerplate = boilerplate || existingProblem.problem[0].boilerplate;
 			existingProblem.problem[0].bottomDriver = bottomDriver || existingProblem.problem[0].bottomDriver;
