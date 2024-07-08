@@ -92,7 +92,7 @@ export const runCode = async (req, res) => {
                 allTestCasesWithUserCode.data[i + filterCustomInputs2.length].Expected_Output = allTestCasesWithUserCode.data[i].stdout
             }
 
-            allTestCasesWithUserCode.data = allTestCasesWithUserCode.data.slice(3);
+            allTestCasesWithUserCode.data = allTestCasesWithUserCode.data.slice(filterCustomInputs2.length);
             allTestCasesWithUserCode.success = true;
         }
 
