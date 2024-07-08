@@ -1,3 +1,4 @@
+import ProblemModel from '../../models/Problem.model.js';
 import Submission from '../../models/Submission.model.js';
 import UserModel from '../../models/user.model.js';
 
@@ -24,27 +25,45 @@ export const getAllSubmissions = async (req, res) => {
     }
 };
 
-// Get a single submission by ID
-export const getSubmissionById = async (req, res) => {
+// get submission by the problem slug
+export const getSubmissionsByProblemSlug = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { slug } = req.params;
+        let { page = 1, limit = 10 } = req.query;
 
-        const submission = await Submission.findById(id)
-            .populate('problem')
-            .populate('user')
-            .populate('solution.language');
+        page = parseInt(page);
+        limit = parseInt(limit);
 
-        if (!submission) {
+        // Find the problem by slug
+        const problem = await ProblemModel.findOne({ slug });
+
+        if (!problem) {
             return res.status(404).json({
                 success: false,
-                message: 'Submission not found',
+                message: 'Problem not found',
             });
         }
 
+        // Find submissions for the found problem with pagination
+        const submissions = await Submission.find({ problem: problem._id })
+            .populate('problem')
+            .populate('user')
+            .populate('solution.language')
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        const totalSubmissions = await Submission.countDocuments({ problem: problem._id });
+
         return res.status(200).json({
             success: true,
-            message: "Submisssion fetched succesfully ",
-            data: submission,
+            message: 'Submissions fetched successfully',
+            data: submissions,
+            pagination: {
+                totalSubmissions,
+                totalPages: Math.ceil(totalSubmissions / limit),
+                currentPage: page,
+                pageSize: limit,
+            },
         });
 
     } catch (error) {
@@ -54,7 +73,7 @@ export const getSubmissionById = async (req, res) => {
             message: error.message,
         });
     }
-};
+}
 
 // Update a submission
 export const updateSubmission = async (req, res) => {

@@ -96,10 +96,13 @@ export const runCode = async (req, res) => {
             allTestCasesWithUserCode.success = true;
         }
 
+        let passedTestCases = 0;
         // console.log("combinedTC", combinedTC)
         allTestCasesWithUserCode.data.forEach((item, index) => {
             item.input = combinedTC[index].input;
             item.Expected_Output = item.Expected_Output ? item.Expected_Output : combinedTC[index].output || item.Expected_Output;
+
+            if (item.status.id === 3)passedTestCases++
         });
 
         if (!allTestCasesWithUserCode.success && filterCustomInputs2.length > 0) {
@@ -113,6 +116,8 @@ export const runCode = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "All test cases passed",
+            PassedTestCases: passedTestCases,
+            TotalTestCases: combinedTC.length,
             results: allTestCasesWithUserCode.data,
         });
 
