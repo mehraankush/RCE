@@ -11,6 +11,11 @@ const submissionSchema = new mongoose.Schema(
             type: mongoose.Types.ObjectId,
             ref: 'User',
         },
+        attempts: [
+            {
+                type: String
+            }
+        ],
         solution: {
             language: {
                 type: mongoose.Types.ObjectId,

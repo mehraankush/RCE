@@ -161,7 +161,6 @@ export const submitCode = async (req, res) => {
         }
 
         let findSolutionDrivers = prob.problem.filter((prob) => prob.ProgrammingLanguage.languageId === languageCode);
-        // console.log("findSolutionDrivers", findSolutionDrivers)
 
         if (!findSolutionDrivers.length) {
             return res.status(404).json({
@@ -179,32 +178,70 @@ export const submitCode = async (req, res) => {
             input: tc.input.replace(',', ' ')
         }));
 
-        const allTestCasesWithUserCode = await processTestCase(
-            userCodeConcatenated,
-            null,
-            prob.testCase.testCase,
-            [],
-            languageCode
-        );
+        let allTestCasesWithUserCode;
+        try {
+            allTestCasesWithUserCode = await processTestCase(
+                userCodeConcatenated,
+                null,
+                prob.testCase.testCase,
+                [],
+                languageCode
+            );
 
-        if (!allTestCasesWithUserCode.wrongAnswer) {
+        } catch (error) {
+            const newSubmission = await Submission.create({
+                problem: problemId,
+                user: userId,
+                attempts: ['Wrong Answer'],
+                solution: {
+                    language: findSolutionDrivers[0].ProgrammingLanguage._id,
+                    code: userCode
+                },
+            });
+            const submitSolution = await newSubmission.save()
+
+            return res.status(400).json({
+                success: true,
+                message: "Solution submitted succesfully",
+                submissionId: submitSolution._id,
+                results: submitSolution,
+            });
+        }
+
+
+        if (allTestCasesWithUserCode.wrongAnswer) {
+
+            const newSubmission = await Submission.create({
+                problem: problemId,
+                user: userId,
+                attempts: ['Wrong Answer'],
+                solution: {
+                    language: findSolutionDrivers[0].ProgrammingLanguage._id,
+                    code: userCode
+                },
+            });
+            const submitSolution = await newSubmission.save()
+
             return res.status(400).json({
                 success: false,
                 message: "All Test cases Should pass",
+                submissionId: submitSolution._id,
+                submitSolution: submitSolution,
                 result: allTestCasesWithUserCode.data
-            })
+            });
         }
 
         const newSubmission = await Submission.create({
             problem: problemId,
             user: userId,
+            attempts: ['Accepted'],
             solution: {
                 language: findSolutionDrivers[0].ProgrammingLanguage._id,
                 code: userCode
             },
         });
 
-        const submitSolution = await newSubmission.save()
+        const submitSolution = await newSubmission.save();
 
         return res.status(200).json({
             success: true,
