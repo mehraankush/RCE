@@ -7,7 +7,6 @@ export const getAllSubmissions = async (req, res) => {
     try {
         const submissions = await Submission.find({})
             .populate('problem')
-            .populate('user')
             .populate('solution.language');
 
         return res.status(200).json({
@@ -28,14 +27,14 @@ export const getAllSubmissions = async (req, res) => {
 // get submission by the problem slug
 export const getSubmissionsByProblemSlug = async (req, res) => {
     try {
-        const { slug } = req.params;
+        const { problemId, userId } = req.params;
         let { page = 1, limit = 10 } = req.query;
 
         page = parseInt(page);
         limit = parseInt(limit);
 
         // Find the problem by slug
-        const problem = await ProblemModel.findOne({ slug });
+        const problem = await ProblemModel.findById(problemId);
 
         if (!problem) {
             return res.status(404).json({
@@ -45,9 +44,8 @@ export const getSubmissionsByProblemSlug = async (req, res) => {
         }
 
         // Find submissions for the found problem with pagination
-        const submissions = await Submission.find({ problem: problem._id })
+        const submissions = await Submission.find({ problem: problem._id, user: userId })
             .populate('problem')
-            .populate('user')
             .populate('solution.language')
             .skip((page - 1) * limit)
             .limit(limit);

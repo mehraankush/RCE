@@ -208,7 +208,7 @@ export const submitCode = async (req, res) => {
             });
         }
 
-
+        console.log("allTestCasesWithUserCode",allTestCasesWithUserCode)
         if (allTestCasesWithUserCode.wrongAnswer) {
 
             const newSubmission = await Submission.create({
@@ -326,7 +326,7 @@ const processTestCase = async (
 
 
             const allAccepted = userSubmissionsStatus.every(submission => submission.status.id === 3 || submission.status.id === 4);
-            const wrongAnswer = userSubmissionsStatus.every(submission => submission.status.id === 4);
+            const wrongAnswer = userSubmissionsStatus.some(submission => submission.status.id === 4);
 
             if (allAccepted) {
                 return {

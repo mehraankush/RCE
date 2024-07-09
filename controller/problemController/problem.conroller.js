@@ -18,7 +18,8 @@ export const createProblem = async (req, res) => {
 			solutionCode,
 			hints,
 			language,
-			constraints
+			constraints,
+			testCase
 		} = req.body;
 
 		// Input validation
