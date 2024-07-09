@@ -102,13 +102,14 @@ export const runCode = async (req, res) => {
             item.input = combinedTC[index].input;
             item.Expected_Output = item.Expected_Output ? item.Expected_Output : combinedTC[index].output || item.Expected_Output;
 
-            if (item.status.id === 3)passedTestCases++
+            if (item.status.id === 3) passedTestCases++
         });
 
         if (!allTestCasesWithUserCode.success && filterCustomInputs2.length > 0) {
             return res.status(404).json({
                 success: false,
                 message: "All test cases should pass",
+                status: "Wrong Answer",
                 results: allTestCasesWithUserCode
             });
         }
@@ -116,6 +117,7 @@ export const runCode = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "All test cases passed",
+            status: "Accepted",
             PassedTestCases: passedTestCases,
             TotalTestCases: combinedTC.length,
             results: allTestCasesWithUserCode.data.reverse(),
@@ -207,7 +209,7 @@ export const submitCode = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "Solution submitted succesfully",
-            submissionId:submitSolution._id,
+            submissionId: submitSolution._id,
             results: submitSolution,
         });
 
