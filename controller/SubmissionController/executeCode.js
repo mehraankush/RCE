@@ -246,8 +246,6 @@ export const submitCode = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "Solution submitted succesfully",
-            submissionId: submitSolution._id,
-            results: submitSolution,
         });
 
     } catch (error) {
