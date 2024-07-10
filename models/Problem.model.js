@@ -16,6 +16,11 @@ const problemSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
+		status: {
+			type: String,
+			enum: ["Todo ", "Solved", "Attempted"],
+			default: "Todo"
+		},
 		difficulty: {
 			type: String,
 			enum: problemDifficulties,
