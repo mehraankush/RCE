@@ -200,7 +200,7 @@ export const submitCode = async (req, res) => {
             });
             const submitSolution = await newSubmission.save()
 
-            return res.status(400).json({
+            return res.status(200).json({
                 success: true,
                 message: "Solution submitted succesfully",
                 submissionId: submitSolution._id,
