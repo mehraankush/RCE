@@ -71,7 +71,7 @@ export const createNestedReply = async (req, res) => {
         }
 
         // Check maximum nesting depth
-        const MAX_DEPTH = 5; // Adjust as needed
+        const MAX_DEPTH = 5;
         if (parentDiscussion.ancestorCount >= MAX_DEPTH) {
             return res.status(400).json({ message: "Maximum comment depth reached" });
         }
@@ -152,6 +152,24 @@ export const getGeneralDiscussions = async (req, res) => {
     }
 };
 
+const populateChildren = async (discussion) => {
+    if (discussion.children && discussion.children.length > 0) {
+        await DiscussionModel.populate(discussion, {
+            path: 'children',
+            populate: [
+                {
+                    path: 'children'
+                }
+            ]
+        });
+
+        for (const child of discussion.children) {
+            await populateChildren(child);
+        }
+    }
+};
+
+
 export const getDiscussionsBySolution = async (req, res) => {
     try {
         const { id: submissionId } = req.params;
@@ -170,7 +188,10 @@ export const getDiscussionsBySolution = async (req, res) => {
             .limit(limit)
             // .populate('userId', 'username')  
             .lean();
-console.log(discussions)
+
+        for (let discussion of discussions) {
+            await populateChildren(discussion);
+        }
 
         const total = await DiscussionModel.countDocuments({
             submissionId
