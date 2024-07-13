@@ -32,7 +32,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use("/api/v1", allRoutes);
-
 app.listen(port, () => {
 	console.log("Server is up and running at ", port)
 })

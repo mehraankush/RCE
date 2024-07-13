@@ -3,6 +3,8 @@ import ProblemModel from "../../models/Problem.model.js";
 import Submission from "../../models/Submission.model.js";
 import mongoose from "mongoose";
 import { formatTokens } from '../../utils/formatoken.js'
+import { errorHandler } from "../../utils/ErrorHandler.js";
+import { updateStreak } from "../streakController/streak.js";
 
 
 export const runCode = async (req, res) => {
@@ -208,7 +210,7 @@ export const submitCode = async (req, res) => {
             });
         }
 
-        console.log("allTestCasesWithUserCode",allTestCasesWithUserCode)
+        console.log("allTestCasesWithUserCode", allTestCasesWithUserCode)
         if (allTestCasesWithUserCode.wrongAnswer) {
 
             const newSubmission = await Submission.create({
@@ -222,13 +224,10 @@ export const submitCode = async (req, res) => {
             });
             const submitSolution = await newSubmission.save()
 
-            return res.status(400).json({
-                success: false,
-                message: "All Test cases Should pass",
-                submissionId: submitSolution._id,
-                submitSolution: submitSolution,
-                result: allTestCasesWithUserCode.data
-            });
+            return errorHandler(res, "All Test cases Should pass", 400,
+                { submissionId: submitSolution._id },
+                { submitSolution: submitSolution },
+                { result: allTestCasesWithUserCode.data })
         }
 
         const newSubmission = await Submission.create({
@@ -242,6 +241,7 @@ export const submitCode = async (req, res) => {
         });
 
         const submitSolution = await newSubmission.save();
+        await updateStreak(submitSolution.user);
 
         return res.status(200).json({
             success: true,

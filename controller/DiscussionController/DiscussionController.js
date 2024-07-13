@@ -47,10 +47,10 @@ export const createParentDiscussion = async (req, res) => {
         const newDiscussion = new DiscussionModel(discussionData);
         await newDiscussion.save();
 
-        successHandler(res, newDiscussion, "Parent discussion created successfully");
+        return successHandler(res, newDiscussion, "Parent discussion created successfully");
     } catch (error) {
         console.error('Error in createParentDiscussion:', error);
-        catchHandler(error, res);
+        return catchHandler(error, res);
     }
 };
 
@@ -61,7 +61,7 @@ export const createNestedReply = async (req, res) => {
         // Validate user
         // const user = await User.findById(userId);
         if (!userId) {
-            return res.status(404).json({ message: "User not found" });
+            return errorHandler(res, "User not found", 404)
         }
 
         // Find parent discussion
@@ -73,7 +73,7 @@ export const createNestedReply = async (req, res) => {
         // Check maximum nesting depth
         const MAX_DEPTH = 5;
         if (parentDiscussion.ancestorCount >= MAX_DEPTH) {
-            return res.status(400).json({ message: "Maximum comment depth reached" });
+            return errorHandler(res, "Maximum comment depth reached")
         }
 
         // Prepare the reply object
@@ -99,10 +99,10 @@ export const createNestedReply = async (req, res) => {
             $push: { children: newReply._id }
         });
 
-        successHandler(res, newReply, "Reply added successfully")
+        return successHandler(res, newReply, "Reply added successfully")
     } catch (error) {
         console.error('Error in createNestedReply:', error);
-        catchHandler(error, res)
+        return catchHandler(error, res)
     }
 };
 
@@ -140,7 +140,7 @@ export const getGeneralDiscussions = async (req, res) => {
             totalItems: total
         };
 
-        successHandler(
+        return successHandler(
             res,
             {
                 discussions: findGeneralDiscussions,
@@ -148,7 +148,7 @@ export const getGeneralDiscussions = async (req, res) => {
             },
             "Discussions retrieved successfully");
     } catch (error) {
-        catchHandler(error, res);
+        return catchHandler(error, res);
     }
 };
 
@@ -207,9 +207,9 @@ export const getDiscussionsBySolution = async (req, res) => {
             totalItems: total
         };
 
-        successHandler(res, { discussions, pagination: paginationInfo }, "Discussions retrieved successfully");
+        return successHandler(res, { discussions, pagination: paginationInfo }, "Discussions retrieved successfully");
     } catch (error) {
-        catchHandler(error, res);
+        return catchHandler(error, res);
     }
 };
 
@@ -217,8 +217,8 @@ export const getAllDiscussion = async (req, res) => {
     try {
         const findAllDiscussion = await DiscussionModel.find({});
 
-        successHandler(res, findAllDiscussion)
+        return successHandler(res, findAllDiscussion)
     } catch (error) {
-        catchHandler(error, res)
+        return catchHandler(error, res)
     }
 }

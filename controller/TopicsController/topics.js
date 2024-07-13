@@ -1,5 +1,5 @@
 import TopicModel from '../../models/Topics.model.js';
-import { catchHandler } from '../../utils/ErrorHandler.js';
+import { catchHandler, errorHandler } from '../../utils/ErrorHandler.js';
 import { successHandler } from '../../utils/sucessHandler.js';
 
 const createSlug = (title) => {
@@ -8,10 +8,10 @@ const createSlug = (title) => {
 
 export const getAlltopics = async (req, res) => {
     try {
-        const newTopic =await  TopicModel.find({});
-        successHandler(res, newTopic, "All Topics")
+        const newTopic = await TopicModel.find({});
+        return successHandler(res, newTopic, "All Topics")
     } catch (error) {
-        catchHandler(error, res)
+        return catchHandler(error, res)
     }
 };
 export const createTopic = async (req, res) => {
@@ -22,10 +22,10 @@ export const createTopic = async (req, res) => {
         const newTopic = new TopicModel({ title, slug, description, link });
         await newTopic.save();
 
-        successHandler(res, newTopic, "Topic Created successfully")
+        return successHandler(res, newTopic, "Topic Created successfully")
 
     } catch (error) {
-        catchHandler(error, res)
+        return catchHandler(error, res)
     }
 };
 
@@ -36,12 +36,12 @@ export const getTopicBySlug = async (req, res) => {
     try {
         const topic = await TopicModel.findOne({ slug });
         if (!topic) {
-            return res.status(404).json({ error: "Topic not found" });
+            return errorHandler(res, "Topic not found", 404)
         }
 
-        successHandler(res, topic, "Topic Found")
+        return successHandler(res, topic, "Topic Found")
     } catch (error) {
-        catchHandler(error, res)
+        return catchHandler(error, res)
     }
 };
 
@@ -53,7 +53,7 @@ export const updateTopicBySlug = async (req, res) => {
     try {
         const topic = await TopicModel.findOne({ slug });
         if (!topic) {
-            return res.status(404).json({ error: "Topic not found" });
+            return errorHandler(res, "Topic not found", 404)
         }
 
         if (title) {
@@ -64,7 +64,7 @@ export const updateTopicBySlug = async (req, res) => {
         if (link) topic.link = link;
 
         await topic.save();
-        successHandler(res, topic, "Topic Updated Successfully")
+        return successHandler(res, topic, "Topic Updated Successfully")
     } catch (error) {
         catchHandler(error, res)
     }
@@ -76,10 +76,10 @@ export const deleteTopicBySlug = async (req, res) => {
     try {
         const topic = await TopicModel.findOneAndDelete({ slug });
         if (!topic) {
-            return res.status(404).json({ error: "Topic not found" });
+            return errorHandler(res, "Topic not found", 404)
         }
-        successHandler(res, topic, "Topic deleted successfully")
+        return successHandler(res, topic, "Topic deleted successfully")
     } catch (error) {
-        catchHandler(error, res)
+        return catchHandler(error, res)
     }
 };
