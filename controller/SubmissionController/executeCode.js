@@ -71,8 +71,8 @@ export const runCode = async (req, res) => {
 
 
         if (allTestCasesWithUserCode.message === "Time Limit Exceeded") {
-            return res.status(400).json({
-                success: false,
+            return res.status(200).json({
+                success: true,
                 message: "Time Limit Exceeded",
                 results: allTestCasesWithUserCode.data.slice(filterCustomInputs2.length)
             });
