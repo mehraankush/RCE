@@ -7,8 +7,10 @@ import { successHandler } from "../../utils/sucessHandler.js";
 export const addTestCase = async (req, res) => {
 	try {
 		// Validate required fields
-		const { problemId, input, output } = req.body;
-		if (!problemId || !input || !output) {
+		const { problemId, input, output, explaination } = req.body;
+
+		console.log(req.body)
+		if (!problemId || !input || !output || !explaination) {
 			throw new Error(
 				"400: Bad Request - Problem, Input, and Output are required."
 			);
@@ -37,6 +39,7 @@ export const addTestCase = async (req, res) => {
 			existingTestCase.testCase.push({
 				input: input.trim(),
 				output: output.trim(),
+				explaination:explaination.trim()
 			});
 			await existingTestCase.save();
 
@@ -49,6 +52,7 @@ export const addTestCase = async (req, res) => {
 					{
 						input: input,
 						output: output,
+						explaination:explaination
 					},
 				],
 			});
