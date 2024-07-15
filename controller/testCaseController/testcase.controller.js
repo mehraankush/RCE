@@ -39,7 +39,7 @@ export const addTestCase = async (req, res) => {
 			existingTestCase.testCase.push({
 				input: input.trim(),
 				output: output.trim(),
-				explaination:explaination.trim()
+				explaination: explaination.trim()
 			});
 			await existingTestCase.save();
 
@@ -52,15 +52,16 @@ export const addTestCase = async (req, res) => {
 					{
 						input: input,
 						output: output,
-						explaination:explaination
+						explaination: explaination
 					},
 				],
 			});
 			problem.testCase = newTestCase._id;
 			await problem.save();
+			return successHandler(res, { newTestCase, problem }, "Test case created successfully.")
 		}
+		return null
 
-		return successHandler(res, { newTestCase, problem }, "Test case created successfully.")
 	} catch (error) {
 		console.error(error.message);
 		return catchHandler(error, res)
@@ -105,8 +106,8 @@ export const getTestCasesById = async (req, res) => {
 
 export const updateTestCase = async (req, res) => {
 	try {
-		const { id:testCAseId } = req.params;
-		const { input, output, explanation ,id} = req.body;
+		const { id: testCAseId } = req.params;
+		const { input, output, explanation, id } = req.body;
 
 		if (!input && !output && !explanation) {
 			return errorHandler(res, "At least one field is required: input, output, or explanation");
@@ -118,9 +119,9 @@ export const updateTestCase = async (req, res) => {
 		}
 		const specificTestCase = findTestCase.testCase.id(id);
 
-        if (!specificTestCase) {
-            return errorHandler(res, "Specific Test Case not found", 404);
-        }
+		if (!specificTestCase) {
+			return errorHandler(res, "Specific Test Case not found", 404);
+		}
 
 		if (input) {
 			specificTestCase.input = input;

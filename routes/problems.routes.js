@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+    addSolutionDriver,
     createProblem,
     deleteProblem,
     getAllProblems,
@@ -11,6 +12,7 @@ const router = Router();
 
 
 router.post('/create-question', createProblem)
+router.post('/add-solution/:id', addSolutionDriver)
 router.get('/', getAllProblems)
 router.get('/:slug', getProblemBySlug)
 router.put('/:id', updateProblem)

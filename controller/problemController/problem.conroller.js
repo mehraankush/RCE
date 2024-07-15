@@ -2,7 +2,9 @@ import mongoose from "mongoose";
 import ProblemModel from "../../models/Problem.model.js";
 import { createSlug } from '../../utils/createSlug.js'
 import { validateProblemInput } from "../../utils/validation/problemInputValidator.js";
-
+import { catchHandler, errorHandler } from "../../utils/ErrorHandler.js";
+import { successHandler } from "../../utils/sucessHandler.js";
+import ProgrammingLanguage from "../../models/Language.model.js";
 
 export const createProblem = async (req, res) => {
 	try {
@@ -220,6 +222,48 @@ export const updateProblem = async (req, res) => {
 	}
 };
 
+export const addSolutionDriver = async (req, res) => {
+	try {
+		const { id } = req.params;
+		const { ProgrammingLanguageId, topDriver, boilerplate, bottomDriver, solutionCode } = req.body;
+
+		if (!id) {
+			return errorHandler(res, "Problem ID is required");
+		}
+
+		if (!ProgrammingLanguageId || !topDriver || !boilerplate || !bottomDriver || !solutionCode) {
+			return errorHandler(res, "All fields (ProgrammingLanguage, topDriver, boilerplate, bottomDriver, solutionCode) are required");
+		}
+
+		const problem = await ProblemModel.findById(id);
+
+		if (!problem) {
+			return errorHandler(res, "Problem not found", 404);
+		}
+
+		const findProgrammingLanguage = await ProgrammingLanguage.findById(ProgrammingLanguageId)
+
+		if (!findProgrammingLanguage) {
+			return errorHandler(res, "Programming Language Not found", 404);
+		}
+
+		const newSolutionDriver = {
+			ProgrammingLanguage: mongoose.Types.ObjectId(ProgrammingLanguageId),
+			topDriver,
+			boilerplate,
+			bottomDriver,
+			solutionCode,
+		};
+
+		problem.problem.push(newSolutionDriver);
+
+		await problem.save();
+
+		return successHandler(res, problem, "Solution driver added successfully")
+	} catch (error) {
+		return catchHandler(error, res);
+	}
+};
 
 export const deleteProblem = async (req, res) => {
 	try {
@@ -257,3 +301,4 @@ export const deleteProblem = async (req, res) => {
 		});
 	}
 };
+
