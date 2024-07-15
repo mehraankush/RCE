@@ -156,13 +156,9 @@ export const updateProblem = async (req, res) => {
 			difficulty,
 			tags,
 			companies,
-			topDriver,
-			boilerplate,
-			bottomDriver,
-			solutionCode,
 			hints,
-			ProgrammingLanguage,
-			testCase
+			testCase,
+			constraints
 		} = req.body;
 
 		const { id: problemId } = req.params
@@ -188,17 +184,10 @@ export const updateProblem = async (req, res) => {
 		// Update problem details
 		existingProblem.title = title || existingProblem.title;
 		existingProblem.description = description || existingProblem.description;
+		existingProblem.constraints = constraints || existingProblem.constraints;
 		existingProblem.difficulty = difficulty || existingProblem.difficulty;
 		existingProblem.tags = tags ? tags.split(",").map((tag) => tag.trim()) : existingProblem.tags;
 		existingProblem.companies = companies ? companies.split(",").map((company) => company.trim()) : existingProblem.companies;
-
-		if (ProgrammingLanguage || topDriver || boilerplate || bottomDriver || solutionCode) {
-			existingProblem.problem[0].ProgrammingLanguage = ProgrammingLanguage ? new mongoose.Types.ObjectId(ProgrammingLanguage) : existingProblem.problem[0].ProgrammingLanguage;
-			existingProblem.problem[0].topDriver = topDriver || existingProblem.problem[0].topDriver;
-			existingProblem.problem[0].boilerplate = boilerplate || existingProblem.problem[0].boilerplate;
-			existingProblem.problem[0].bottomDriver = bottomDriver || existingProblem.problem[0].bottomDriver;
-			existingProblem.problem[0].solutionCode = solutionCode || existingProblem.problem[0].solutionCode;
-		}
 
 		existingProblem.hints = hints ? hints.trim() : existingProblem.hints;
 		existingProblem.testCase = testCase ? new mongoose.Types.ObjectId(testCase) : existingProblem.testCase;
@@ -230,13 +219,13 @@ export const addSolutionDriver = async (req, res) => {
 		if (!id) {
 			return errorHandler(res, "Problem ID is required");
 		}
-
 		if (!ProgrammingLanguageId || !topDriver || !boilerplate || !bottomDriver || !solutionCode) {
 			return errorHandler(res, "All fields (ProgrammingLanguage, topDriver, boilerplate, bottomDriver, solutionCode) are required");
 		}
+		console.log("Body Check")
 
 		const problem = await ProblemModel.findById(id);
-
+		console.log("problem", problem)
 		if (!problem) {
 			return errorHandler(res, "Problem not found", 404);
 		}
@@ -248,7 +237,7 @@ export const addSolutionDriver = async (req, res) => {
 		}
 
 		const newSolutionDriver = {
-			ProgrammingLanguage: mongoose.Types.ObjectId(ProgrammingLanguageId),
+			ProgrammingLanguage: new mongoose.Types.ObjectId(ProgrammingLanguageId),
 			topDriver,
 			boilerplate,
 			bottomDriver,
@@ -258,9 +247,54 @@ export const addSolutionDriver = async (req, res) => {
 		problem.problem.push(newSolutionDriver);
 
 		await problem.save();
+		console.log("problem", problem)
 
 		return successHandler(res, problem, "Solution driver added successfully")
 	} catch (error) {
+		console.log(error)
+		return catchHandler(error, res);
+	}
+};
+
+
+export const updateSolutionDriver = async (req, res) => {
+	try {
+		const { id: problemId } = req.params;
+		const { solutionId, ProgrammingLanguageId, topDriver, boilerplate, bottomDriver, solutionCode } = req.body;
+
+		if (!problemId || !solutionId) {
+			return errorHandler(res, "Problem ID and Solution ID are required");
+		}
+
+		const problem = await ProblemModel.findById(problemId);
+		if (!problem) {
+			return errorHandler(res, "Problem not found", 404);
+		}
+
+		const solutionIndex = problem.problem.findIndex(sol => sol._id.toString() === solutionId);
+		if (solutionIndex === -1) {
+			return errorHandler(res, "Solution not found", 404);
+		}
+
+		const solution = problem.problem[solutionIndex];
+
+		if (ProgrammingLanguageId) {
+			const findProgrammingLanguage = await ProgrammingLanguage.findById(ProgrammingLanguageId);
+			if (!findProgrammingLanguage) {
+				return errorHandler(res, "Programming Language Not found", 404);
+			}
+			solution.ProgrammingLanguage = new mongoose.Types.ObjectId(ProgrammingLanguageId);
+		}
+		if (topDriver) solution.topDriver = topDriver;
+		if (boilerplate) solution.boilerplate = boilerplate;
+		if (bottomDriver) solution.bottomDriver = bottomDriver;
+		if (solutionCode) solution.solutionCode = solutionCode;
+
+		await problem.save();
+
+		return successHandler(res, problem, "Solution driver updated successfully");
+	} catch (error) {
+		console.log(error);
 		return catchHandler(error, res);
 	}
 };

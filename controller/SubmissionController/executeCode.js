@@ -75,8 +75,14 @@ export const runCode = async (req, res) => {
         console.log("allTestCasesWithUserCode", allTestCasesWithUserCode)
 
         if (allTestCasesWithUserCode.TLE) {
-            return successHandler(res, { statusCode: 5, results: allTestCasesWithUserCode.data.slice(filterCustomInputs2.length) },
-                allTestCasesWithUserCode.data.message || "Time Limit Exceeded")
+            return res.status(200).json({
+                success: true,
+                message: "Time Limit Exceeded",
+                status: "Time Limit Exceeded",
+                results: allTestCasesWithUserCode.data.slice(filterCustomInputs2.length),
+                TotalTestCases: combinedTC.length,
+                PassedTestCases: 0,
+            });
         }
 
         // console.log("allTestCasesWithUserCode", allTestCasesWithUserCode)
