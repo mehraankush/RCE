@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import ProblemModel from "../../models/Problem.model.js";
 import TestcasesModel from "../../models/Testcases.model.js";
+import { catchHandler, errorHandler } from "../../utils/ErrorHandler.js";
+import { successHandler } from "../../utils/sucessHandler.js";
 
 export const addTestCase = async (req, res) => {
 	try {
@@ -37,11 +39,8 @@ export const addTestCase = async (req, res) => {
 				output: output.trim(),
 			});
 			await existingTestCase.save();
-			res.status(200).json({
-				success: true,
-				message: "Test case updated successfully.",
-				data: existingTestCase,
-			});
+
+			return successHandler(res, { existingTestCase }, "Test case updated successfully.")
 		} else {
 			// Test case not found, create a new one
 			const newTestCase = await TestcasesModel.create({
@@ -54,26 +53,13 @@ export const addTestCase = async (req, res) => {
 				],
 			});
 			problem.testCase = newTestCase._id;
-			console.log("AFTER TESTCASE ADDING", problem);
 			await problem.save();
-			res.status(201).json({
-				success: true,
-				message: "Test case created successfully.",
-				data: newTestCase,
-			});
 		}
+
+		return successHandler(res, { newTestCase, problem }, "Test case created successfully.")
 	} catch (error) {
-		console.error(error.message); // Log the error for debugging
-		// let errorMessage;
-		// if (error.name === "ValidationError") {
-		// 	errorMessage = "400: Bad Request - Validation failed."; // Generic for validation errors
-		// } else if (error.name === "CastError") {
-		// 	errorMessage = "400: Bad Request - Invalid data format."; // For casting errors
-		// } else {
-		// 	errorMessage =
-		// 		"500: Internal Server Error - An unexpected error occurred.";
-		// }
-		return res.status(500).json({ success: false, message: error.message });
+		console.error(error.message);
+		return catchHandler(error, res)
 	}
 };
 
@@ -113,4 +99,39 @@ export const getTestCasesById = async (req, res) => {
 };
 
 
+export const updateTestCase = async (req, res) => {
+	try {
+		const { id:testCAseId } = req.params;
+		const { input, output, explanation ,id} = req.body;
 
+		if (!input && !output && !explanation) {
+			return errorHandler(res, "At least one field is required: input, output, or explanation");
+		}
+
+		const findTestCase = await TestcasesModel.findById(testCAseId);
+		if (!findTestCase) {
+			return errorHandler(res, "Test Case not found", 404);
+		}
+		const specificTestCase = findTestCase.testCase.id(id);
+
+        if (!specificTestCase) {
+            return errorHandler(res, "Specific Test Case not found", 404);
+        }
+
+		if (input) {
+			specificTestCase.input = input;
+		}
+		if (output) {
+			specificTestCase.output = output;
+		}
+		if (explanation) {
+			specificTestCase.explaination = explanation;
+		}
+
+		await findTestCase.save();
+
+		return successHandler(res, findTestCase, "Test Case updated successfully");
+	} catch (error) {
+		return catchHandler(error, res);
+	}
+}

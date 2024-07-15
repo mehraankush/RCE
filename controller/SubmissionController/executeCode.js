@@ -69,14 +69,15 @@ export const runCode = async (req, res) => {
             languageId
         );
 
-
-        if (allTestCasesWithUserCode.message === "Time Limit Exceeded") {
-            return res.status(200).json({
-                success: true,
-                message: "Time Limit Exceeded",
-                results: allTestCasesWithUserCode.data.slice(filterCustomInputs2.length)
-            });
-        }
+        console.log("allTestCasesWithUserCode", allTestCasesWithUserCode)
+        // if (allTestCasesWithUserCode.message === "Time Limit Exceeded") {
+        //     return res.status(200).json({
+        //         success: true,
+        //         message: "Time Limit Exceeded",
+        //          statusCode:4 // for TLE
+        //         results: allTestCasesWithUserCode.data.slice(filterCustomInputs2.length)
+        //     });
+        // }
 
         // console.log("allTestCasesWithUserCode", allTestCasesWithUserCode)
 
@@ -129,7 +130,8 @@ export const runCode = async (req, res) => {
         console.error(error.message);
         return res.status(500).json({
             success: false,
-            message: error.message
+            message: error.message,
+            custom:error
         });
     }
 };
@@ -258,14 +260,14 @@ export const submitCode = async (req, res) => {
 }
 
 // Function to process a single test case
+
 const processTestCase = async (
     userCodeConcatenated,
     solutionCode = null,
     allTestcases,
-    customtestcase = [],
+    customTestcases = [],
     language
 ) => {
-    // console.log("INPUT", input)
     let userSubmissions = allTestcases.map((input) => ({
         source_code: userCodeConcatenated,
         language_id: language,
@@ -273,74 +275,183 @@ const processTestCase = async (
         expected_output: input.output,
     }));
 
-    if (solutionCode && customtestcase) {
-        // custom test case with inbuild solution
-        const customtestcases = customtestcase.map((input) => ({
+    if (solutionCode && customTestcases.length > 0) {
+        // Custom test case with inbuilt solution
+        const customTestcasesSubmissions = customTestcases.map((input) => ({
             source_code: solutionCode,
             language_id: language,
             stdin: input.input,
             expected_output: input.output,
-        }))
+        }));
 
-        userSubmissions = [...customtestcases, ...userSubmissions];
+        userSubmissions = [...customTestcasesSubmissions, ...userSubmissions];
     }
 
-    // user code validation on inbuild test cases
-    const userSubmissionResponse = await axios.post(`${process.env.NEXT_PUBLIC_JUDG0}/submissions/batch`, {
-        submissions: userSubmissions
-    });
-    const userToken = formatTokens(userSubmissionResponse.data);
-    // console.log("userToken", userToken)
-    const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Timeout: API call exceeded 10 seconds.')), 10000);
-    });
+    try {
+        // User code validation on inbuilt test cases
+        const userSubmissionResponse = await axios.post(
+            `${process.env.NEXT_PUBLIC_JUDG0}/submissions/batch`,
+            { submissions: userSubmissions }
+        );
 
-    while (true) {
+        const userToken = formatTokens(userSubmissionResponse.data);
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Timeout: API call exceeded 10 seconds.')), 10000);
+        });
 
-        try {
-            const userResultPromise = await axios.get(`${process.env.NEXT_PUBLIC_JUDG0}/submissions/batch?tokens=${userToken}`);
-            const result = await Promise.race([userResultPromise, timeoutPromise]);
+        while (true) {
+            try {
+                const userResultPromise = axios.get(
+                    `${process.env.NEXT_PUBLIC_JUDG0}/submissions/batch?tokens=${userToken}`
+                );
+                const result = await Promise.race([userResultPromise, timeoutPromise]);
 
-            const userSubmissionsStatus = result.data.submissions;
-            console.log("userResultPromise.data.submissions", userResultPromise.data.submissions)
+                const userSubmissionsStatus = result.data.submissions;
+                const runtimeErrorIds = new Set([7, 8, 9, 10, 11, 12 ]);
 
-            const CheckTLE = userSubmissionsStatus.some((submission) => submission.status.id === 5)
-            // console.log("CheckTLE", CheckTLE)
-            if (CheckTLE) {
-                return {
-                    success: false,
-                    message: "Time Limit Exceeded",
-                    data: userResultPromise.data.submissions
-                };
-            }
-
-            for (const submission of userSubmissionsStatus) {
-                if (submission.status.id === 6) {
-                    throw { ...submission, errorType: "Compilation Error" };
-                } else if (submission.status.id === 7 || submission.status.id === 11) {
-                    throw { ...submission, errorType: "Runtime Error" };
+                for (const submission of userSubmissionsStatus) {
+                    if (submission.status.id === 6) {
+                        throw { ...submission, errorType: "Compilation Error" };
+                    } else if (runtimeErrorIds.has(submission.status.id)) {
+                        throw { ...submission, errorType: "Runtime Error" };
+                    }
+                    else if (submission.status.id === 13) {
+                        throw { ...submission, errorType: "Runtime Error" };
+                    }
+                    else if (submission.status.id === 14) {
+                        throw { ...submission, errorType: "Runtime Error" };
+                    }
                 }
+                const allAccepted = userSubmissionsStatus.every(
+                    (submission) =>
+                        submission.status.id === 3 ||
+                        submission.status.id === 4 ||
+                        submission.status.id === 5
+                );
+                const wrongAnswer = userSubmissionsStatus.some(
+                    (submission) => submission.status.id === 4
+                );
+                const TLE = userSubmissionsStatus.some(
+                    (submission) => submission.status.id === 5
+                );
+
+                if (allAccepted) {
+                    return {
+                        success: true,
+                        wrongAnswer,
+                        TLE,
+                        data: userSubmissionsStatus,
+                    };
+                }
+
+                // Wait for some time before making the next API call
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+            } catch (error) {
+                throw error;
             }
-
-
-            const allAccepted = userSubmissionsStatus.every(submission => submission.status.id === 3 || submission.status.id === 4);
-            const wrongAnswer = userSubmissionsStatus.some(submission => submission.status.id === 4);
-
-            if (allAccepted) {
-                return {
-                    success: false,
-                    wrongAnswer: wrongAnswer,
-                    data: userResultPromise.data.submissions
-                };
-            }
-
-            // Wait for some time before making the next API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-        } catch (error) {
-            throw error
         }
-
+    } catch (error) {
+        return {
+            success: false,
+            message: error.message || "Request failed",
+            error,
+        };
     }
-}
+};
+
+// const processTestCase = async (
+//     userCodeConcatenated,
+//     solutionCode = null,
+//     allTestcases,
+//     customtestcase = [],
+//     language
+// ) => {
+//     // console.log("INPUT", input)
+//     let userSubmissions = allTestcases.map((input) => ({
+//         source_code: userCodeConcatenated,
+//         language_id: language,
+//         stdin: input.input,
+//         expected_output: input.output,
+//     }));
+
+//     if (solutionCode && customtestcase) {
+//         // custom test case with inbuild solution
+//         const customtestcases = customtestcase.map((input) => ({
+//             source_code: solutionCode,
+//             language_id: language,
+//             stdin: input.input,
+//             expected_output: input.output,
+//         }))
+
+//         userSubmissions = [...customtestcases, ...userSubmissions];
+//     }
+
+//     // user code validation on inbuild test cases
+//     const userSubmissionResponse = await axios.post(`${process.env.NEXT_PUBLIC_JUDG0}/submissions/batch`, {
+//         submissions: userSubmissions
+//     });
+//     const userToken = formatTokens(userSubmissionResponse.data);
+//     // console.log("userToken", userToken)
+//     const timeoutPromise = new Promise((_, reject) => {
+//         setTimeout(() => reject(new Error('Timeout: API call exceeded 10 seconds.')), 10000);
+//     });
+
+//     while (true) {
+
+//         try {
+//             const userResultPromise = await axios.get(`${process.env.NEXT_PUBLIC_JUDG0}/submissions/batch?tokens=${userToken}`);
+//             const result = await Promise.race([userResultPromise, timeoutPromise]);
+
+//             const userSubmissionsStatus = result.data.submissions;
+//             console.log("userResultPromise.data.submissions", userResultPromise.data.submissions)
+//             const runtimeErrorIds = new Set([7, 8, 9, 10, 11, 12]);
+
+//             // const CheckTLE = userSubmissionsStatus.some((submission) => submission.status.id === 5)
+//             // console.log("CheckTLE", CheckTLE)
+//             // if (CheckTLE) {
+//             //     return {
+//             //         success: false,
+//             //         message: "Time Limit Exceeded",
+//             //         data: userResultPromise.data.submissions
+//             //     };
+//             // }
+
+//             for (const submission of userSubmissionsStatus) {
+//                 if (submission.status.id === 6) {
+//                     throw { ...submission, errorType: "Compilation Error" };
+//                 } else if (runtimeErrorIds.has(submission.status.id)) {
+//                     throw { ...submission, errorType: "Runtime Error" };
+//                 }
+//                 else if (submission.status.id === 13) {
+//                     throw { ...submission, errorType: "Runtime Error" };
+//                 }
+//                 else if (submission.status.id === 14) {
+//                     throw { ...submission, errorType: "Runtime Error" };
+//                 }
+//             }
+
+
+//             const allAccepted = userSubmissionsStatus.every(submission => submission.status.id === 3 || submission.status.id === 4 || submission.status.id === 5);
+//             const wrongAnswer = userSubmissionsStatus.some(submission => submission.status.id === 4);
+//             const TLE = userSubmissionsStatus.some(submission => submission.status.id === 5);
+
+//             if (allAccepted) {
+//                 return {
+//                     success: false,
+//                     wrongAnswer: wrongAnswer,
+//                     TLE,
+//                     data: userResultPromise.data.submissions
+//                 };
+//             }
+
+//             // Wait for some time before making the next API call
+//             await new Promise(resolve => setTimeout(resolve, 1000));
+
+//         } catch (error) {
+//             throw error
+//         }
+
+//     }
+// }
+
 
