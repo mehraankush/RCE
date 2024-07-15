@@ -1,7 +1,7 @@
 const problemDifficulties = {
-	EASY: "EASY",
-	HARD: "HARD",
-	MEDIUM: "MEDIUM",
+	EASY: "Easy",
+	HARD: "Hard",
+	MEDIUM: "Medium",
 };
 
 const DifficultyEnum = Object.freeze(problemDifficulties);

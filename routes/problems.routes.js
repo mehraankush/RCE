@@ -10,7 +10,7 @@ import {
 const router = Router();
 
 
-router.post('/', createProblem)
+router.post('/create-question', createProblem)
 router.get('/', getAllProblems)
 router.get('/:slug', getProblemBySlug)
 router.put('/:id', updateProblem)
