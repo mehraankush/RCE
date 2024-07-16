@@ -266,7 +266,7 @@ export const submitCode = async (req, res) => {
 
         return successHandler(res, submitSolution, "Solution submitted succesfully")
     } catch (error) {
-        console.error(error.message);
+        console.error("ERROR IN SUBMIT API",error);
         catchHandler(error, res)
     }
 };
