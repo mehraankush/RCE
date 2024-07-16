@@ -11,7 +11,7 @@ const router = Router();
 
 router.get('/', getAllSubmissions)
 router.get('/:id', getAllSubmissionsById)
-router.post('/:slug', getSubmissionsByProblemSlug)
+router.post('/get-submission', getSubmissionsByProblemSlug)
 router.put('/:id', updateSubmission)
 router.delete('/:id', deleteSubmission)
 
