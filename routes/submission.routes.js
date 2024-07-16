@@ -3,12 +3,14 @@ import {
     getAllSubmissions,
     updateSubmission,
     deleteSubmission,
-    getSubmissionsByProblemSlug
+    getSubmissionsByProblemSlug,
+    getAllSubmissionsById
 } from "../controller/SubmissionController/submission.js";
 const router = Router();
 
 
 router.get('/', getAllSubmissions)
+router.get('/:id', getAllSubmissionsById)
 router.post('/:slug', getSubmissionsByProblemSlug)
 router.put('/:id', updateSubmission)
 router.delete('/:id', deleteSubmission)

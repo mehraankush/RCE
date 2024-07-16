@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import ProblemModel from "../../models/Problem.model.js";
 import Submission from "../../models/Submission.model.js";
 import UserModel from "../../models/user.model.js";
+import { errorHandler } from "../../utils/ErrorHandler.js";
+import { successHandler } from "../../utils/sucessHandler.js";
 
 // Get all submissions
 export const getAllSubmissions = async (req, res) => {
@@ -15,6 +17,28 @@ export const getAllSubmissions = async (req, res) => {
       message: "All Submissions",
       data: submissions,
     });
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// get submission by id
+export const getAllSubmissionsById = async (req, res) => {
+  try {
+    const { id } = req.params
+    if (!id) {
+      return errorHandler(res, "Submission ID is required")
+    }
+    const submissions = await Submission.findById(id)
+      .populate("problem")
+      .populate("solution.language");
+
+
+    return successHandler(res, submissions, "Submissions Retrieved Successfully")
   } catch (error) {
     console.error(error.message);
     return res.status(500).json({

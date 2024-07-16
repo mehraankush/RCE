@@ -89,3 +89,5 @@
 {"ip":"::1","level":"info","message":"GET /api/v1/submission","method":"GET","service":"user-service","timestamp":"2024-07-16 12:50:42","url":"/api/v1/submission","userAgent":"PostmanRuntime/7.40.0"}
 {"ip":"::1","level":"info","message":"GET /api/v1/problem","method":"GET","service":"user-service","timestamp":"2024-07-16 12:53:33","url":"/api/v1/problem","userAgent":"PostmanRuntime/7.40.0"}
 {"ip":"::1","level":"info","message":"GET /api/v1/submission?page=1&limit=10","method":"GET","service":"user-service","timestamp":"2024-07-16 12:58:47","url":"/api/v1/submission?page=1&limit=10","userAgent":"PostmanRuntime/7.40.0"}
+{"ip":"::1","level":"info","message":"GET /api/v1/submission","method":"GET","service":"user-service","timestamp":"2024-07-16 21:36:36","url":"/api/v1/submission","userAgent":"PostmanRuntime/7.40.0"}
+{"ip":"::1","level":"info","message":"GET /api/v1/submission/66961f42fddd901fadb69ee9","method":"GET","service":"user-service","timestamp":"2024-07-16 21:37:12","url":"/api/v1/submission/66961f42fddd901fadb69ee9","userAgent":"PostmanRuntime/7.40.0"}
