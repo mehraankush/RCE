@@ -30,21 +30,16 @@ export const getSubmissionsByProblemSlug = async (req, res) => {
     const { problemSlug, userId } = req.body;
     let { page = 1, limit = 10 } = req.query;
 
+    console.log(req.query)
+
     page = parseInt(page);
     limit = parseInt(limit);
 
     console.log(req.body);
 
-    // Validate problemId
-    if (!mongoose.Types.ObjectId.isValid(problemId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid problem ID",
-      });
-    }
 
     // Find the problem by ID
-    const problem = await ProblemModel.find({ slug: problemSlug });
+    const problem = await ProblemModel.findOne({ slug: problemSlug });
 
     if (!problem) {
       return res.status(404).json({
